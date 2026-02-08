@@ -9,23 +9,45 @@ const app = express();
 // CORS configuration - allow frontend domains
 const allowedOrigins = [
   'http://localhost:3000',
+  'https://note-vault-green.vercel.app',
   process.env.FRONTEND_URL,
-  process.env.VERCEL_URL ? `https://${process.env.VERCEL_URL}` : null
+  process.env.VERCEL_FRONTEND_URL
 ].filter(Boolean);
 
 app.use(cors({
   origin: function (origin, callback) {
     // Allow requests with no origin (mobile apps, Postman, etc.)
-    if (!origin) return callback(null, true);
+    if (!origin) {
+      console.log('CORS: Request with no origin - allowing');
+      return callback(null, true);
+    }
     
-    if (allowedOrigins.indexOf(origin) !== -1 || process.env.NODE_ENV === 'development') {
+    // Check if origin is in allowed list
+    if (allowedOrigins.indexOf(origin) !== -1) {
+      console.log('CORS: Allowed origin:', origin);
       callback(null, true);
-    } else {
-      console.log('CORS blocked origin:', origin);
-      callback(null, true); // Allow all for now, restrict in production
+    } 
+    // Allow all Vercel preview deployments (*.vercel.app)
+    else if (origin.endsWith('.vercel.app')) {
+      console.log('CORS: Allowed Vercel domain:', origin);
+      callback(null, true);
+    }
+    // Allow in development
+    else if (process.env.NODE_ENV === 'development') {
+      console.log('CORS: Development mode - allowing:', origin);
+      callback(null, true);
+    } 
+    // For production, you can restrict this
+    else {
+      console.log('CORS: Blocked origin:', origin);
+      console.log('CORS: Allowed origins:', allowedOrigins);
+      // For now, allow all - change to callback(new Error('Not allowed by CORS')) in production
+      callback(null, true);
     }
   },
-  credentials: true
+  credentials: true,
+  methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
+  allowedHeaders: ['Content-Type', 'Authorization']
 }));
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
