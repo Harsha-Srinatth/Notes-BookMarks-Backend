@@ -10,25 +10,38 @@ const app = express();
 const allowedOrigins = [
   'http://localhost:3000',
   process.env.FRONTEND_URL
-].filter(Boolean); // Remove any undefined values
+].filter(Boolean).map(url => url.replace(/\/$/, '')); // Remove trailing slashes
 
+// Log allowed origins for debugging
+console.log('CORS Allowed Origins:', allowedOrigins);
+
+// CORS middleware - must be before routes
 app.use(cors({
   origin: function (origin, callback) {
     // Allow requests with no origin (mobile apps, Postman, etc.)
     if (!origin) {
+      console.log('CORS: Request with no origin - allowing');
       return callback(null, true);
     }
     
+    // Normalize origin (remove trailing slash)
+    const normalizedOrigin = origin.replace(/\/$/, '');
+    
     // Check if origin is in allowed list
-    if (allowedOrigins.includes(origin)) {
+    if (allowedOrigins.includes(normalizedOrigin)) {
+      console.log('CORS: Allowed origin:', normalizedOrigin);
       callback(null, true);
     } else {
+      console.log('CORS: Blocked origin:', normalizedOrigin);
+      console.log('CORS: Allowed origins:', allowedOrigins);
       callback(new Error('Not allowed by CORS'));
     }
   },
   credentials: true,
-  methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
-  allowedHeaders: ['Content-Type', 'Authorization']
+  methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS', 'PATCH'],
+  allowedHeaders: ['Content-Type', 'Authorization'],
+  exposedHeaders: ['Content-Type'],
+  optionsSuccessStatus: 200 // Some browsers require 200 for OPTIONS
 }));
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
