@@ -7,7 +7,7 @@ const router = express.Router();
 // All routes require authentication
 router.use(auth);
 
-// Create a bookmark
+// Create a new bookmark
 router.post('/', async (req, res) => {
   try {
     const { url, title, description, tags, isFavorite } = req.body;
