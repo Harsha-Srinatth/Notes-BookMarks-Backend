@@ -6,41 +6,24 @@ require('dotenv').config();
 const app = express();
 
 // Middleware
-// CORS configuration - allow frontend domains
+// CORS configuration - allow frontend URL and localhost
 const allowedOrigins = [
   'http://localhost:3000',
   process.env.FRONTEND_URL
-].filter(Boolean);
+].filter(Boolean); // Remove any undefined values
 
 app.use(cors({
   origin: function (origin, callback) {
     // Allow requests with no origin (mobile apps, Postman, etc.)
     if (!origin) {
-      console.log('CORS: Request with no origin - allowing');
       return callback(null, true);
     }
     
     // Check if origin is in allowed list
-    if (allowedOrigins.indexOf(origin) !== -1) {
-      console.log('CORS: Allowed origin:', origin);
+    if (allowedOrigins.includes(origin)) {
       callback(null, true);
-    } 
-    // Allow all Vercel preview deployments (*.vercel.app)
-    else if (origin.endsWith('.vercel.app')) {
-      console.log('CORS: Allowed Vercel domain:', origin);
-      callback(null, true);
-    }
-    // Allow in development
-    else if (process.env.NODE_ENV === 'development') {
-      console.log('CORS: Development mode - allowing:', origin);
-      callback(null, true);
-    } 
-    // For production, you can restrict this
-    else {
-      console.log('CORS: Blocked origin:', origin);
-      console.log('CORS: Allowed origins:', allowedOrigins);
-      // For now, allow all - change to callback(new Error('Not allowed by CORS')) in production
-      callback(null, true);
+    } else {
+      callback(new Error('Not allowed by CORS'));
     }
   },
   credentials: true,
