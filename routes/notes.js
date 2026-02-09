@@ -6,7 +6,7 @@ const router = express.Router();
 // All routes require authentication
 router.use(auth);
 
-// Create a note
+// Create a new note
 router.post('/', async (req, res) => {
   try {
     const { title, content, tags, isFavorite } = req.body;

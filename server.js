@@ -9,9 +9,7 @@ const app = express();
 // CORS configuration - allow frontend domains
 const allowedOrigins = [
   'http://localhost:3000',
-  'https://note-vault-green.vercel.app',
-  process.env.FRONTEND_URL,
-  process.env.VERCEL_FRONTEND_URL
+  process.env.FRONTEND_URL
 ].filter(Boolean);
 
 app.use(cors({
